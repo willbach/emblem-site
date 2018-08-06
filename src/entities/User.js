@@ -94,7 +94,6 @@ UserSchema.pre('save', function(next) {
 UserSchema.methods.comparePassword = function(candidatePassword) {
     return new Promise((resolve, reject) => {
         bcrypt.compare(candidatePassword, this.password, (err, passwordMatch) => {
-            console.log('CHECKING PW ', this, err, passwordMatch)
             if (err) reject(err)
             resolve({ passwordMatch, id: this._id })
         })

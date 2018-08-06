@@ -5,14 +5,14 @@ const User = require('../entities/User')
 
 const userRepository = {}
 
-userRepository.getUser = (id) => {
+userRepository.getUser = id => {
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
         return User.findById(id)
     }
     throw new Error('id format is not valid')
 }
 
-userRepository.storeUser = (userInfo) => {
+userRepository.storeUser = userInfo => {
     console.log('CLIENT INPUT: ', userInfo)
     const newUser = new User(userInfo)
     return newUser.save()
@@ -22,8 +22,8 @@ userRepository.storeUser = (userInfo) => {
     })
 }
 
-userRepository.updateUser = (userInfo) => {
-    return User.findById(userInfo._id)
+userRepository.updateUser = userInfo => {
+    return User.findById(userInfo.id)
     .then( user => {
         console.log('CLIENT INPUT: ', userInfo)
         return user.set(userInfo).save()
@@ -33,22 +33,22 @@ userRepository.updateUser = (userInfo) => {
     })
 }
 
-userRepository.loginUser = (userInfo) => {
+userRepository.loginUser = userInfo => {
     username = userInfo.username
     password = userInfo.password
-    return userRepository.getUser(username)
+    return User.findOne({ username })
     .then( user => user.comparePassword(password) ) //terniary operator
     .then( data => {
         const { passwordMatch, id } = data
 
         if(!passwordMatch) {
-            throw new Error("Password doesn't match") //ends here bcause it's throwing an error (i.e. it has a return)
+            throw new Error("Password doesn't match") //ends here because it's throwing an error (i.e. it has a return)
         }
         return id //return the user's id to generate the token if there is a match
     })
 }
 
-userRepository.deleteUser = (id) => {
+userRepository.deleteUser = id => {
     return User.findById(id).remove()
 }
 

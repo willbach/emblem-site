@@ -14,46 +14,49 @@ const userController = {}
 
 userController.getUser = (req, res) => {
     authUtils.verifyToken(req)
-    .then( id => {
+    .then( data => {
+        const { id } = data
         return userService.getUser(id)
     })
     .then( user => {
         if (!user) {
             res.status(404).end('User does not exist')
         } else {
-            res.status(200).end(user)
+            res.status(200).json(user)
         }
     })
     .catch( err => { // 'catch' the error that was thrown by an earlier file (service or repository), and tell the browser the error type and message
         console.log('[GET] USER ERROR: ', err)
         if (err === 'Id format is not valid') {
-            res.status(400).end(err) //send error code and error text (which is defined by `throw new Error`). 400 = invalid request
+            res.status(400).json(err) //send error code and error text (which is defined by `throw new Error`). 400 = invalid request
         } else if (err === 'No token provided.' || err === 'Failed to authenticate token.') {
-            res.status(401).end(err) //send error code and error text. 401 = not authorized
+            res.status(401).json(err) //send error code and error text. 401 = not authorized
         } else {
-            res.status(503).end(err) //send error code and error text. 503 = service not available
+            res.status(503).json(err) //send error code and error text. 503 = service not available
         }
     })
 }
 
 userController.storeUser = (req, res) => {
     userService.storeUser(req.body).then( authData => {
-        res.end(authData)
+        res.json(authData)
     })
     .catch( err => {
         console.log('[POST] STORE USER ERROR: ', err)
-        res.status(400).end(err)
+        res.status(400).json(err)
     })
 }
 
 userController.updateUser = (req, res) => {
     authUtils.verifyToken(req)
-    .then( id => {
+    .then( data => {
+        const { id } = data
+
         if (id !== req.body.id) {
             throw new Error('User and token do not match.')
         }
         return userService.updateUser(req.body).then( user  => {
-            res.end(user.username)
+            res.status(200).json(user)
         })
     })
     .then( user => {
@@ -65,34 +68,38 @@ userController.updateUser = (req, res) => {
     })
     .catch ( err => {
         if (err === 'No token provided.' || err === 'Failed to authenticate token.' || err === 'User and token do not match.') {
-            res.status(401).end(err) //send error code and error text. 401 = not authorized
+            res.status(401).json(err) //send error code and error text. 401 = not authorized
         } else {
-            res.status(400).end(err)
+            res.status(400).json(err)
         }
+    })
+}
+
+userController.deleteUser = (req, res) => {
+    authUtils.verifyToken(req)
+    .then( data => {
+        const { id } = data
+        return userService.deleteUser(id)
+    })
+    .then( () => {
+        res.status(204).end()
+    })
+    .catch( err => {
+        console.log('[DELETE] USER ERROR: ', err)
+        res.status(400).end('DELETE_FAILED')
     })
 }
 
 userController.loginUser = (req, res) => {
     userService.loginUser(req.body).then( authData => {
         console.log('USER LOGGED IN ', authData)
-        res.end(authData) //defaults to 200
+        res.json(authData) //defaults to 200
     })
     .catch( err => {
         console.log('[POST] LOGIN USER ERROR: ', err)
         res.status(401).end('USER NOT AUTHORIZED')
     })
 }
-
-userController.deleteUser = (req, res) => {
-    userService.deleteUser(req.params.username).then((data) => {
-        res.status(204).end()
-    })
-    .catch( err => {
-        console.log(err)
-        res.status(400).end('DELETE_FAILED')
-    })
-}
-
 
 ////////////////////////////////////////////////////
 // CODE FOR USER ACCOUNT INFO ENDS HERE ///////////
@@ -123,9 +130,9 @@ userController.getGuidance = (req, res) => {
     .catch( err => { // 'catch' the error that was thrown by an earlier file (service or repository), and tell the browser the error type and message
         console.log(err)
         if (err === 'id format is not valid') {
-            res.status(400).end(err) //send error code and error text (which is defined by `throw new Error`). 400 = invalid request
+            res.status(400).json(err) //send error code and error text (which is defined by `throw new Error`). 400 = invalid request
         } else {
-            res.status(503).end(err) //send error code and error text. 503 = service not available
+            res.status(503).json(err) //send error code and error text. 503 = service not available
         }
     })
 }
@@ -138,7 +145,7 @@ userController.storeGuidance = (req, res) => {
     })
     .catch( (err) => {
         console.log('ERROR: ', err)
-        res.status(400).end(err)
+        res.status(400).json(err)
     })
 }
 
@@ -155,7 +162,7 @@ userController.updateGuidance = (req, res) => {
     })
     .catch ( err => {
         console.log('ERROR: ', err)
-        res.status(400).end(err)
+        res.status(400).json(err)
     })
 }
 
@@ -191,9 +198,9 @@ userController.getStudent = (req, res) => {
     .catch( err => { // 'catch' the error that was thrown by an earlier file (service or repository), and tell the browser the error type and message
         console.log(err)
         if (err === 'id format is not valid') {
-            res.status(400).end(err) //send error code and error text (which is defined by `throw new Error`). 400 = invalid request
+            res.status(400).json(err) //send error code and error text (which is defined by `throw new Error`). 400 = invalid request
         } else {
-            res.status(503).end(err) //send error code and error text. 503 = service not available
+            res.status(503).json(err) //send error code and error text. 503 = service not available
         }
     })
 }
@@ -205,7 +212,7 @@ userController.storeStudent = (req, res) => {
     })
     .catch( (err) => {
         console.log('ERROR: ', err)
-        res.status(400).end(err)
+        res.status(400).json(err)
     })
 }
 
@@ -222,7 +229,7 @@ userController.updateStudent = (req, res) => {
     })
     .catch ( err => {
         console.log('ERROR: ', err)
-        res.status(400).end(err)
+        res.status(400).json(err)
     })
 }
 
@@ -258,9 +265,9 @@ userController.getTranscript = (req, res) => {
     .catch( err => { // 'catch' the error that was thrown by an earlier file (service or repository), and tell the browser the error type and message
         console.log(err)
         if (err === 'transcript format is not valid') {
-            res.status(400).end(err) //send error code and error text (which is defined by `throw new Error`). 400 = invalid request
+            res.status(400).json(err) //send error code and error text (which is defined by `throw new Error`). 400 = invalid request
         } else {
-            res.status(503).end(err) //send error code and error text. 503 = service not available
+            res.status(503).json(err) //send error code and error text. 503 = service not available
         }
     })
 }
@@ -272,7 +279,7 @@ userController.storeTranscript = (req, res) => {
     })
     .catch( (err) => {
         console.log('ERROR: ', err)
-        res.status(400).end(err)
+        res.status(400).json(err)
     })
 }
 
@@ -289,7 +296,7 @@ userController.updateTranscript = (req, res) => {
     })
     .catch ( err => {
         console.log('ERROR: ', err)
-        res.status(400).end(err)
+        res.status(400).json(err)
     })
 }
 

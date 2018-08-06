@@ -12,7 +12,7 @@ authUtil.verifyToken = req => {
       reject('No token provided.')
     }
 
-    jwt.verifyId(token, config.secret, function(err, decodedId) {
+    jwt.verify(token, config.secret, function(err, decodedId) {
       if(err) {
         reject('Failed to authenticate token.')
       }

@@ -13,6 +13,7 @@ const transcriptRepository = require('../repositories/transcript.repository')
 
 const keccak256 = require('js-sha3').keccak256;
 const authUtils = require('../utils/auth.util')
+const UserDTO = require('../dto/user.dto')
 
 
 //just in case we need it later
@@ -25,12 +26,12 @@ const userService = {}
 ///////////////////////////////////////////////////
 
 //get user
-userService.getUser = (id) => {
-    return userRepository.getUser(id)
+userService.getUser = id => {
+    return userRepository.getUser(id).then( user => new UserDTO(user) )
 }
 
 //create user
-userService.storeUser = (userInfo) => {
+userService.storeUser = userInfo => {
     if(userInfo.accountType === 'guidance') {
         if(userInfo.code === null) {
             throw new Error('Guidance counselor code not valid')
@@ -46,17 +47,17 @@ userService.storeUser = (userInfo) => {
 }
 
 //update user
-userService.updateUser = (userInfo) => {
+userService.updateUser = userInfo => {
     return userRepository.updateUser(userInfo)
 }
 
 //delete user
-userService.deleteUser = (id) => {
+userService.deleteUser = id => {
     return userRepository.deleteUser(id)
 }
 
 //login user
-userService.loginUser = (userInfo) => {
+userService.loginUser = userInfo => {
     return userRepository.loginUser(userInfo)
     .then( id => {
         return authUtils.generateToken(id)

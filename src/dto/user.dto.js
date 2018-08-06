@@ -1,5 +1,6 @@
-class StudentDTO {
+class UserDTO {
   constructor(record) {
+    this.id = record._id
     this.username = record.username
     this.accountType = record.accountType
     this.firstName = record.firstName
@@ -10,3 +11,5 @@ class StudentDTO {
     this.previousSchoolIDs = record.previousSchoolIDs
   }
 }
+
+module.exports = UserDTO
