@@ -4,6 +4,21 @@ export default class UserRepository {
     this.auth = false
   }
 
+  makeRequest (route, options) {
+    return fetch(route, options).then(this.handleErrors)
+  }
+
+  handleErrors (response) {
+    if (!response.ok) {
+      throw Error(`${response.status} ${response.statusText}`)
+    }
+    return response
+  }
+
+  toJSON (response) {
+    return response.json()
+  }
+
   setToken (token) {
     this.token = token
   }
@@ -15,7 +30,7 @@ export default class UserRepository {
         'Content-Type': 'application/json'
       }
     }
-    return fetch('/user', options)
+    return this.makeRequest('/user', options).then(this.toJSON)
   }
 
   createUser (userData) {
@@ -26,10 +41,10 @@ export default class UserRepository {
       },
       body: JSON.stringify(userData)
     }
-    return fetch('/user', options)
+    return this.makeRequest('/user', options).then(this.toJSON)
   }
 
-  updateUser () {
+  updateUser (userData) {
     const options = {
       method: 'PUT',
       headers: {
@@ -38,7 +53,7 @@ export default class UserRepository {
       },
       body: JSON.stringify(userData)
     }
-    return fetch('/user', options)
+    return this.makeRequest('/user', options)
   }
 
   deleteUser () {
@@ -49,6 +64,17 @@ export default class UserRepository {
         'Content-Type': 'application/json'
       }
     }
-    return fetch('/user', options)
+    return this.makeRequest('/user', options)
+  }
+
+  loginUser (loginData) {
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(loginData)
+    }
+    return this.makeRequest('/user/login', options).then(this.toJSON)
   }
 }
