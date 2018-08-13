@@ -23,24 +23,19 @@ const schoolController = require('./controllers/school.controller')
 
 //routes
 
-app.get('/helloworld', (req, res) => res.end('hello world')) //hello world
-
 //generic accounts
-app.get('/user', userController.getUser) //gets user account data (uname, pass, account type) from username
-app.post('/user', userController.storeUser) // sets user account data (uname, pass, account type)
-app.put('/user', userController.updateUser) //updates user account data (uname, pass, account type) by username
-app.delete('/user', userController.deleteUser) //deletes user account (uname, pass, account type) by username
-app.get('/user/find/:username', userController.findUser)
+app.get('/user', userController.getUser)
+app.post('/user', userController.storeUser)
+app.put('/user', userController.updateUser)
+app.delete('/user', userController.deleteUser)
 
 //authentication
 app.post('/user/login', userController.loginUser)
 
 //transcript
-app.get('/transcript/:pdfContent', userController.getTranscript) //gets transcript data (pdfContent, username, studentUsername) from pdfContent
-app.post('/transcript', userController.storeTranscript) // sets transcript data (pdfContent, username, studentUsername, date&time updated)
-app.put('/transcript', userController.updateTranscript) //updates transcript data (pdfContent, username, studentUsername) by pdfContent
-app.delete('/transcript/:pdfContent', userController.deleteTranscript) //deletes transcript data (pdfContent, username, studentUsername) by pdfContent
-// app.get('/transcript/query/username/:username', userController.getTranscriptByUsername) //gets transcripts by username
+app.get('/transcript/:accountType', userController.getTranscript) // students get their transcript, guidance get all transcripts for the school
+app.post('/transcript', userController.storeTranscript)
+app.delete('/transcript', userController.deleteTranscript)
 
 //school
 app.get('/school/:schoolID', schoolController.getSchool) //gets school data (name and address) from schoolID

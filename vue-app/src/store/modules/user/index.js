@@ -1,15 +1,14 @@
 import router from '../../../router'
 import UserRepository from '../../../repositories/user.repository'
 import UserCreator from './UserCreator'
-import moment from 'moment'
+import { auth } from '../../../repositories/lib/helpers'
 
 const userRepo = new UserRepository()
 
 const state = {
   userInfo: {},
+  transcripts: [],
   profilePic: '',
-  transcript: '',
-  transcriptHash: '',
   loading: false
 }
 
@@ -48,11 +47,7 @@ const getters = {
     return state.userInfo.schoolID
   },
 
-  transcript: (state, _getters, _rootState) => {
-    return state.transcript
-  },
-
-  transcriptHash: (state, _getters, _rootState) => {
+  transcripts: (state, _getters, _rootState) => {
     return state.transcript
   },
 
@@ -67,12 +62,7 @@ const actions = {
     if (typeof state.userInfo.username === 'string' && state.userInfo.username !== '') {
       router.push('/profile')
     } else {
-      const authExpiration = localStorage.getItem('authExpiration')
-      const authToken = localStorage.getItem('authToken')
-
-      if (authExpiration && authToken && moment(authExpiration) > moment()) {
-        const authToken = localStorage.getItem('authToken')
-        userRepo.setToken(authToken)
+      if (auth.hasToken()) {
         userRepo.getUser()
           .then(userData => {
             console.log('COMMITTING DATA ', userData)
@@ -81,11 +71,10 @@ const actions = {
           })
           .catch(err => {
             console.log('ERROR CREATING USER: ', err)
+            router.push('/login')
           })
-          .finally(() => commit('userLoading', false))
+          .finally(() => commit('loader/setLoading', false))
       } else {
-        localStorage.removeItem('authExpiration')
-        localStorage.removeItem('authToken')
         if (route === 'profile') {
           router.push('/login')
         }
@@ -94,15 +83,11 @@ const actions = {
   },
 
   createUser ({ commit, state }, userData) {
-    commit('userLoading', true)
+    commit('loader/setLoading', true)
     const userToCreate = new UserCreator(userData)
     console.log('USER DATA FOR THE SERVER ', userToCreate)
     return userRepo.createUser(userToCreate)
-      .then(authData => {
-        console.log('GOT TOKEN ', authData)
-        storeAuthToken(authData.token)
-        return userRepo.setToken(authData.token)
-      })
+      .then(authData => console.log('GOT TOKEN ', authData))
       .then(() => {
         console.log('GETTING USER')
         return userRepo.getUser()
@@ -110,36 +95,34 @@ const actions = {
       .then(userData => {
         console.log('COMMITTING DATA ', userData)
         commit('setUser', userData)
-        router.push('/profile')
+        routeUser(userData, router)
       })
       .catch(err => {
         console.log('ERROR CREATING USER: ', err)
+        router.push('/signup')
       })
-      .finally(() => commit('userLoading', false))
+      .finally(() => commit('loader/setLoading', false))
   },
 
   getUser ({ commit, state }) {
-    commit('userLoading', true)
+    commit('loader/setLoading', true)
     userRepo.getUser()
       .then(userData => {
         commit('setUser', userData)
-        router.push('/profile')
+        routeUser(userData, router)
       })
       .catch(err => {
         console.log('ERROR GETTING USER: ', err)
+        router.push('/login')
       })
-      .finally(() => commit('userLoading', false))
+      .finally(() => commit('loader/setLoading', false))
   },
 
   loginUser ({ commit, state }, loginData) {
     console.log('LOGGING IN ', loginData)
-    commit('userLoading', true)
+    commit('loader/setLoading', true)
     userRepo.loginUser(loginData)
-      .then(authData => {
-        console.log('GOT TOKEN ', authData)
-        storeAuthToken(authData.token)
-        return userRepo.setToken(authData.token)
-      })
+      .then(authData => console.log('GOT TOKEN ', authData))
       .then(() => {
         console.log('GETTING USER')
         return userRepo.getUser()
@@ -147,12 +130,13 @@ const actions = {
       .then(userData => {
         console.log('COMMITTING DATA ', userData)
         commit('setUser', userData)
-        router.push('/profile')
+        routeUser(userData, router)
       })
       .catch(err => {
         console.log('ERROR LOGGING IN: ', err)
+        router.push('/login')
       })
-      .finally(() => commit('userLoading', false))
+      .finally(() => commit('loader/setLoading', false))
   }
 }
 
@@ -166,20 +150,12 @@ const mutations = {
     delete state.userData
   },
 
-  setTranscriptHash (state, hash) {
-    state.transcriptHash = hash
+  setTranscripts (state, transcripts) {
+    state.transcripts = transcripts
   },
 
-  removeTranscriptHash (state) {
-    delete state.transcriptHash
-  },
-
-  setTranscript (state, transcript) {
-    state.transcript = transcript
-  },
-
-  removeTranscript (state) {
-    delete state.transcript
+  removeTranscripts (state) {
+    delete state.transcripts
   },
 
   setProfilePic (state, pic) {
@@ -188,21 +164,7 @@ const mutations = {
 
   removeProfilePic (state) {
     delete state.profilePic
-  },
-
-  userLoading (state, isLoading) {
-    state.loading = isLoading
   }
-
-  // EXAMPLE
-  // setProducts (state, products) {
-  //   state.all = products
-  // },
-
-  // decrementProductInventory (state, { id }) {
-  //   const product = state.all.find(product => product.id === id)
-  //   product.inventory--
-  // }
 }
 
 export default {
@@ -213,7 +175,10 @@ export default {
   mutations
 }
 
-function storeAuthToken (token) {
-  localStorage.setItem('authToken', token)
-  localStorage.setItem('authExpiration', moment().add(1, 'minute'))
+function routeUser (userData, router) {
+  if (userData.accountType === 'guidance') {
+    router.push('/upload')
+  } else {
+    router.push('/profile')
+  }
 }

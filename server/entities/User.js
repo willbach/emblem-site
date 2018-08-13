@@ -51,6 +51,11 @@ const UserSchema = new Schema({
         required: true
     },
 
+    graduationYear: {
+        type: String,
+        required: false
+    },
+
     schoolID: {
         type: String, 
         required: true
