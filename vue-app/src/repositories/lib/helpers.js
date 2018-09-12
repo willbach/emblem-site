@@ -15,7 +15,8 @@ export const makeRequest = (route, options) => {
 
 export const handleErrors = (response) => {
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status > 204) {
+      console.log('BAD CALL: ', response.status, response.statusText)
       localStorage.removeItem('authExpiration')
       localStorage.removeItem('authToken')
       auth.removeToken()

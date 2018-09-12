@@ -10,7 +10,7 @@ export default class Auth {
   setToken (token) {
     this.token = token
     localStorage.setItem('authToken', token)
-    localStorage.setItem('authExpiration', moment(Date.now().toISOString).add(1, 'minute'))
+    localStorage.setItem('authExpiration', moment(Date.now().toISOString).add(1, 'day'))
   }
 
   removeToken () {

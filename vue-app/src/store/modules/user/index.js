@@ -1,7 +1,6 @@
 import router from '../../../router'
 import UserRepository from '../../../repositories/user.repository'
 import UserCreator from './UserCreator'
-import { auth } from '../../../repositories/lib/helpers'
 
 const userRepo = new UserRepository()
 
@@ -58,32 +57,25 @@ const getters = {
 
 // actions
 const actions = {
-  checkUser ({ commit, state }, route) {
-    if (typeof state.userInfo.username === 'string' && state.userInfo.username !== '') {
-      router.push('/profile')
-    } else {
-      if (auth.hasToken()) {
-        userRepo.getUser()
-          .then(userData => {
-            console.log('COMMITTING DATA ', userData)
-            commit('setUser', userData)
-            router.push('/profile')
-          })
-          .catch(err => {
-            console.log('ERROR CREATING USER: ', err)
-            router.push('/login')
-          })
-          .finally(() => commit('loader/setLoading', false))
-      } else {
-        if (route === 'profile') {
-          router.push('/login')
-        }
-      }
-    }
+  checkUser ({ commit, state }, path) {
+    return userRepo.getUser()
+      .then(userData => {
+        console.log('COMMITTING DATA ', userData)
+        commit('setUser', userData)
+        return path
+      })
+      .catch(err => {
+        console.log('ERROR CREATING USER: ', err)
+        return '/login'
+      })
+      .finally(route => {
+        commit('loader/setLoading', false, { root: true })
+        return route
+      })
   },
 
   createUser ({ commit, state }, userData) {
-    commit('loader/setLoading', true)
+    commit('loader/setLoading', true, { root: true })
     const userToCreate = new UserCreator(userData)
     console.log('USER DATA FOR THE SERVER ', userToCreate)
     return userRepo.createUser(userToCreate)
@@ -101,11 +93,11 @@ const actions = {
         console.log('ERROR CREATING USER: ', err)
         router.push('/signup')
       })
-      .finally(() => commit('loader/setLoading', false))
+      .finally(() => commit('loader/setLoading', false), { root: true })
   },
 
   getUser ({ commit, state }) {
-    commit('loader/setLoading', true)
+    commit('loader/setLoading', true, { root: true })
     userRepo.getUser()
       .then(userData => {
         commit('setUser', userData)
@@ -115,12 +107,12 @@ const actions = {
         console.log('ERROR GETTING USER: ', err)
         router.push('/login')
       })
-      .finally(() => commit('loader/setLoading', false))
+      .finally(() => commit('loader/setLoading', false), { root: true })
   },
 
   loginUser ({ commit, state }, loginData) {
     console.log('LOGGING IN ', loginData)
-    commit('loader/setLoading', true)
+    commit('loader/setLoading', true, { root: true })
     userRepo.loginUser(loginData)
       .then(authData => console.log('GOT TOKEN ', authData))
       .then(() => {
@@ -136,7 +128,7 @@ const actions = {
         console.log('ERROR LOGGING IN: ', err)
         router.push('/login')
       })
-      .finally(() => commit('loader/setLoading', false))
+      .finally(() => commit('loader/setLoading', false), { root: true })
   }
 }
 

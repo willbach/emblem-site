@@ -3,17 +3,15 @@ import Vuex from 'vuex'
 
 import loader from './modules/loader'
 import user from './modules/user'
-
-import TranscriptRepository from '../repositories/transcript.repository'
-
-const transcriptRepo = new TranscriptRepository()
+import transcript from './modules/transcript'
 
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
   modules: {
     loader,
-    user
+    user,
+    transcript
   },
   state: {
 
@@ -25,13 +23,7 @@ const store = new Vuex.Store({
 
   },
   actions: {
-    uploadTranscripts: ({ commit, state }, transcriptData) => {
-      commit('loader/setLoading', true)
-      transcriptRepo.uploadTranscripts(transcriptData)
-        .then(data => 'UPLOAD SUCCESS')
-        .catch(err => console.log('ERROR UPLOADING TRANSCRIPTS: ', err))
-        .finally(() => commit('loader/setLoading', true))
-    }
+
   }
 })
 export default store

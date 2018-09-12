@@ -1,11 +1,11 @@
 const SALT_WORK_FACTOR = 10;
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcrypt-nodejs')
 
-//should be connection for everything vvvvv
+const database = process.env.EMBLEM_DATABASE
+
 const mongoose = require('mongoose')
 mongoose.Promise = require('bluebird')
-mongoose.connect('mongodb://localhost/transcript')
-// mongoose.connect('mongodb://localhost/transcript')
+mongoose.connect(`mongodb://localhost/${database}`)
 
 const db = mongoose.connection
 db.on('error', console.error.bind(console, 'connection error:'))
@@ -51,7 +51,7 @@ const UserSchema = new Schema({
         required: true
     },
 
-    graduationYear: {
+    lastYearInSchool: {
         type: String,
         required: false
     },
@@ -69,9 +69,14 @@ const UserSchema = new Schema({
         type: Boolean,
         required: true
     },
+
+    transcriptHash: {
+        type: String
+    },
     
     sequence: Number,
-    updatedAt: { type: Date, default: Date.now }
+    updatedAt: { type: Date, default: Date.now },
+    createdAt: { type: Date, default: Date.now }
 })
 
 UserSchema.pre('save', function(next) {

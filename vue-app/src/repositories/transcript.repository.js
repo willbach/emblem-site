@@ -5,10 +5,10 @@ export default class TranscriptRepository {
     const options = {
       method: 'POST',
       headers: {
-        'x-access-token': auth.token,
-        'Content-Type': 'application/json'
+        // 'Content-Type': 'multipart/form-data',
+        'x-access-token': auth.token
       },
-      body: JSON.stringify(transcriptData)
+      body: transcriptData
     }
     return makeRequest('/transcript', options)
   }
